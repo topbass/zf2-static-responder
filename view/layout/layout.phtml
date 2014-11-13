@@ -1,0 +1,79 @@
+<?php echo $this->doctype() ?>
+
+<!--[if lt IE 7]> <html class="no-js ie lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie lt-ie9" lang="en"> <![endif]-->
+<!--[if IE 9]>    <html class="no-js ie ie9" lang="en"> <![endif]-->
+<!--[if gt IE 9]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <?php echo $this->headTitle('ZF2 Static Responder'), PHP_EOL ?>
+        <?php echo $this->headMeta()
+                        ->setCharset('utf-8')
+                        ->appendName('robots', 'noindex')
+                        ->appendName('viewport', 'width=device-width, initial-scale=1.0')
+                        ->appendHttpEquiv('X-UA-Compatible', 'IE=edge,chrome=1', array('conditional' => 'IE')), PHP_EOL ?>
+        <?php echo $this->StaticBundle()->includeJavaScriptBundle('base') ?>
+    </head>
+    <body>
+        <?php echo $this->content ?>
+
+        <script>
+        NGES.Global = {};
+        head.js(
+            <?php echo '"', implode('","', $this->ResourceCdn()->js()), '"', PHP_EOL ?>
+        ).ready(function() {
+            // fallback to load from local if cdn is down
+            if (!window.jQuery) {
+                head.js(
+                    <?php echo '"', implode('","', $this->ResourceCdn()->localJs()), '",', PHP_EOL ?>
+                    <?php echo '"', implode('","', $this->ResourceCdn()->localCss()), '"', PHP_EOL ?>
+                );
+            }
+            // load the rest files from local
+            head.js(
+                <?php echo $this->StaticBundle()->headjsJavaScriptBundle('library')
+                                                ->moduleJavaScriptBundle()
+                                                ->viewModelJavaScriptBundle() ?>
+                , function() {
+                    <?php echo $this->placeholder('OnJavaScriptLibrariesLoaded'), PHP_EOL ?>
+                    NGES.Timing.jsLoadedIncludePhp = NGES.Timing.app();
+                    NGES.Timing.jsLoadedExcludePhp = NGES.Timing.js();
+                }
+            ).ready(document, function() {
+                NGES.Timing.domReadyIncludePhp = NGES.Timing.app();
+                NGES.Timing.domReadyExcludePhp = NGES.Timing.js();
+            }).ready(function() {
+                "use strict";
+                // automatically initialize bootstrap class
+                NGES.Core.Bootstrap.init();
+                // destruct before the page is unloaded
+                $(window).on("beforeunload.nges", function() {
+                    NGES.Core.Bootstrap.destruct();
+                });
+                <?php echo $this->placeholder('LastMinuteJavaScript'), PHP_EOL ?>
+                <?php if ($this->ModuleApp()->getEnvironment() == 'production'): ?>
+                    (function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){
+                    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+                    })(window,document,"script","//www.google-analytics.com/analytics.js","ga");
+                    ga("create", "UA-46616380-1", "dbschenker.com");
+                    ga("set", {
+                        dimension1:"<?php echo isset($this->auth->uid)? $this->auth->uid: 'guest' ?>",
+                        dimension2:"<?php echo isset($this->auth->cn)? $this->auth->cn: 'guest' ?>",
+                        dimension3:"<?php echo isset($this->auth->ou)? $this->auth->ou: 'guest' ?>"
+                    });
+                    ga("send", "pageview");
+                    $().ready(function() {
+                        ga("send", "timing", "DOM Ready", NGES.Core.Abstract.getPackageName() + " (Incl. PHP)", NGES.Timing.domReadyIncludePhp, NGES.Global.username);
+                        ga("send", "timing", "DOM Ready", NGES.Core.Abstract.getPackageName() + " (Excl. PHP)", NGES.Timing.domReadyExcludePhp, NGES.Global.username);
+                        ga("send", "timing", "JS Loaded", NGES.Core.Abstract.getPackageName() + " (Incl. PHP)", NGES.Timing.jsLoadedIncludePhp, NGES.Global.username);
+                        ga("send", "timing", "JS Loaded", NGES.Core.Abstract.getPackageName() + " (Excl. PHP)", NGES.Timing.jsLoadedExcludePhp, NGES.Global.username);
+                        ga("send", "timing", "Page Loaded", NGES.Core.Abstract.getPackageName() + " (Incl. PHP)", NGES.Timing.app(), NGES.Global.username);
+                        ga("send", "timing", "Page Loaded", NGES.Core.Abstract.getPackageName() + " (Excl. PHP)", NGES.Timing.js(), NGES.Global.username);
+                    });
+                <?php endif ?><?php echo PHP_EOL ?>
+            });
+        });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,23 @@
+{
+    "name": "topbass/static-responder",
+    "type": "zend-extra",
+    "description": "ZF2 Static Responder from Topbass Labs",
+    "keywords": [],
+    "homepage": "http://topbasslabs.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rollie Ma",
+            "email": "rollie@topbasslabs.com"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "StaticResponder\\": "src/",
+            "StaticResponderTest\\": "test/"
+        }
+    },
+    "require": {
+        "composer/installers": "*"
+    }
+}
